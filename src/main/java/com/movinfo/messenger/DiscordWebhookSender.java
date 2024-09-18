@@ -25,12 +25,13 @@ public class DiscordWebhookSender {
 
         HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(body, headers);
 
-        ResponseEntity<String> response = restTemplate.exchange(WEBHOOK_URL, HttpMethod.POST, requestEntity, String.class);
-
-        if (response.getStatusCode().is2xxSuccessful()) {
-            System.out.println("Message sent successfully: " + response.getBody());
-        } else {
-            System.out.println("Failed to send message. HTTP Status: " + response.getStatusCode());
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(WEBHOOK_URL, HttpMethod.POST, requestEntity, String.class);
+            if (!response.getStatusCode().is2xxSuccessful()) {
+                System.out.println("Failed to send message. HTTP Status: " + response.getStatusCode());
+            }
+        } catch (IllegalArgumentException e) {
+            System.out.println("No Discord Webhook URL found!\n Check env setting");
         }
     }
 }
