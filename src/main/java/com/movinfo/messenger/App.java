@@ -8,6 +8,7 @@ public class App
 {
     public static void main( String[] args )
     {
-        DiscordWebhookSender.sendMessage("hello");
+        MongoDBController mongoDBController = new MongoDBController();
+        mongoDBController.watchMovieInfo();
     }
 }
