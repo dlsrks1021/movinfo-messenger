@@ -10,5 +10,4 @@ COPY target/movinfo*.jar messenger.jar
 
 # 실행 및 모니터링
 CMD touch /var/log/messenger.log && \
-    java -jar messenger.jar > /var/log/messenger.log 2>&1 && \
-    tail -F /var/log/messenger.log
+    java -jar messenger.jar > /var/log/messenger.log 2>&1 & tail -F /var/log/messenger.log
