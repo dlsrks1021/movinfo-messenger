@@ -8,7 +8,7 @@ import com.mongodb.client.MongoCollection;
 
 public class MongoDBController {
 
-    private static final String MONGO_URL = "mongodb://localhost:27017";
+    private static final String MONGO_URL = System.getenv("MONGO_URL");
     private MongoChangeStreamWatcher mongoChangeStreamWatcher;
     private MongoClient mongoClient;
     private MongoCollection<Document> movieCollection;
