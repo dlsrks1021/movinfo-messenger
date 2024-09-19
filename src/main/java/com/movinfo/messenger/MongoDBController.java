@@ -16,7 +16,7 @@ public class MongoDBController {
 
     public MongoDBController(){
         mongoClient = MongoClients.create(MONGO_URL);
-        movieCollection = mongoClient.getDatabase("movinfo").getCollection("movie");
+        movieCollection = mongoClient.getDatabase("movinfo").getCollection("movies");
         resumeTokenCollection = mongoClient.getDatabase("movinfo").getCollection("resume_token_storage");
         mongoChangeStreamWatcher = new MongoChangeStreamWatcher(movieCollection, resumeTokenCollection);
     }
