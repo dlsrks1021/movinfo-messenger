@@ -19,7 +19,7 @@ public class MongoChangeStreamWatcher {
 
     public void watchForUpdates() {
         Document tokenDoc = tokenCollection.find(new Document("stream", "movieStream")).first();
-        BsonDocument lastResumeToken = tokenDoc != null ? tokenDoc.get("resumeToken", BsonDocument.class) : null;
+        BsonDocument lastResumeToken = tokenDoc != null ? tokenDoc.get("resumeToken", Document.class).toBsonDocument() : null;
 
         MongoCursor<ChangeStreamDocument<Document>> cursor;
         if (lastResumeToken != null) {
