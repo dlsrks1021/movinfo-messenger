@@ -1,0 +1,67 @@
+name: Bump Version
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main 
+    paths:
+      - 'build/**'
+      - 'src/**'
+      - 'pom.xml'
+
+jobs:
+  bump-version:
+    if: github.event.pull_request.merged == true 
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Determine version bump
+        id: version_bump
+        run: |
+          commit_message=$(git log -1 --pretty=%B)
+          if [[ $commit_message == feat:* ]]; then
+              echo "bump=minor" >> $GITHUB_ENV
+          elif [[ $commit_message == fix:* ]]; then
+              echo "bump=patch" >> $GITHUB_ENV
+          elif [[ $commit_message == BREAKING\ CHANGE:* ]]; then
+              echo "bump=major" >> $GITHUB_ENV
+          else
+              echo "bump=none" >> $GITHUB_ENV
+          fi
+
+      - name: Update version
+        if: env.bump != 'none'
+        run: |
+          chmod +x ./version/update_version.sh
+          ./version/update_version.sh ${{ env.bump }}
+
+      - name: Read version from file
+        id: get_version
+        run: echo "VERSION=$(cat ./version/version.txt)" >> $GITHUB_ENV
+
+      - name: Set up Git credentials
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Specify branch name
+        if: env.bump != 'none'
+        run: |
+          branch_name="version-bump-${{ env.VERSION }}-$(date +'%Y%m%d')"
+          echo "branch_name=$branch_name" >> $GITHUB_ENV
+
+      - name: Create Pull Request
+        if: env.bump != 'none'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          base: main
+          branch: ${{ env.branch_name }}
+          add-paths: ./version/version.txt
+          commit-message: "Bump version to ${{ env.VERSION }}"
+          title: "Bump version to ${{ env.VERSION }}"
+          body: "This PR bumps the version to ${{ env.VERSION }}"
