@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 import org.bson.Document;
 import org.bson.types.ObjectId;
+import org.bson.types.Binary;
 
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoClient;
@@ -50,7 +51,8 @@ public class MongoUtils {
         ObjectId id = movieDocument.getObjectId("_id");
         String name = movieDocument.getString("name");
         Date dateOpen = movieDocument.getDate("dateOpen");
-        byte[] poster = movieDocument.get("poster", byte[].class);
+        byte[] poster = movieDocument.get("poster", Binary.class).getData();
+        
         Document screenDocument = movieDocument.get("screen", Document.class);
 
         Movie movie = new Movie(id, name, dateOpen, poster);
