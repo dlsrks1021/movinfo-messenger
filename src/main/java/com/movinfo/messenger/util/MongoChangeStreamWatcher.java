@@ -1,11 +1,15 @@
-package com.movinfo.messenger;
+package com.movinfo.messenger.util;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import com.mongodb.client.model.changestream.OperationType;
+import com.movinfo.messenger.model.Movie;
+
 import org.bson.BsonDocument;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 
 public class MongoChangeStreamWatcher {
 
@@ -31,15 +35,21 @@ public class MongoChangeStreamWatcher {
         while (cursor.hasNext()) {
             ChangeStreamDocument<Document> change = cursor.next();
             Document updatedDocument = change.getFullDocument();
-            String operationType = change.getOperationType().getValue();
+            OperationType operationType = change.getOperationType();
 
-            if (updatedDocument != null && operationType.equals("insert")) {
-                String name = updatedDocument.getString("name");
-                String date = updatedDocument.getString("date");
-                StringBuilder stringBuilder = new StringBuilder();
-                stringBuilder.append("["+date+"]\n");
-                stringBuilder.append(name);
-                DiscordWebhookSender.sendMessage(stringBuilder.toString());
+            if (updatedDocument != null) {
+                if (operationType.equals(OperationType.INSERT)){
+                    Movie movie =  MongoUtils.parseMovieFromDocument(updatedDocument);
+                    JDAUtils.sendMovieInfoToMovieChannel(movie);
+                }
+                else if (operationType.equals(OperationType.UPDATE)){
+                    Movie movie =  MongoUtils.parseMovieFromDocument(updatedDocument);
+                    MongoUtils.checkAndSendMessageForUpdatedScreenFromMovie(movie);
+                }
+                else if (operationType.equals(OperationType.DELETE)){
+                    ObjectId deletedId = change.getDocumentKey().getObjectId("_id").getValue();
+                    MongoUtils.removeMovieFromList(deletedId);
+                }
             }
 
             BsonDocument resumeToken = change.getResumeToken();

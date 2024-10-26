@@ -1,14 +1,22 @@
 package com.movinfo.messenger;
 
-/**
- * Hello world!
- *
- */
+import com.movinfo.messenger.util.JDAUtils;
+import com.movinfo.messenger.util.MongoUtils;
+
 public class App 
 {
     public static void main( String[] args )
     {
-        MongoDBController mongoDBController = new MongoDBController();
-        mongoDBController.watchMovieInfo();
+        App app = new App();
+        app.run();
+    }
+
+    private void run(){
+        // init
+        MongoUtils.init();
+        JDAUtils.init();
+
+        // execute
+        MongoUtils.watchMovieInfo();
     }
 }
