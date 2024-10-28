@@ -40,6 +40,7 @@ public class MongoChangeStreamWatcher {
             if (updatedDocument != null) {
                 if (operationType.equals(OperationType.INSERT)){
                     Movie movie =  MongoUtils.parseMovieFromDocument(updatedDocument);
+                    MongoUtils.addMovieToList(movie);
                     JDAUtils.sendMovieInfoToMovieChannel(movie);
                 }
                 else if (operationType.equals(OperationType.UPDATE)){

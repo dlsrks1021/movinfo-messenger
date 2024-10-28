@@ -36,6 +36,9 @@ public class SelectMenuHandler extends ListenerAdapter{
                         String roleName = movie.getName()+"_"+type;
                         if (roleNameList.contains(roleName)){
                             if (!RoleManager.hasRole(JDAUtils.getGuild(), roleName, event.getUser())){
+                                if (!RoleManager.isRoleExist(JDAUtils.getGuild(), roleName)){
+                                    RoleManager.createRole(JDAUtils.getGuild(), roleName);
+                                }
                                 RoleManager.addRoleToMember(JDAUtils.getGuild(), roleName, event.getUser());
                             }
                         } else {
