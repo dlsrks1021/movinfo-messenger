@@ -99,12 +99,18 @@ public class RoleManager {
 
     public static void removeRoleFromMember(Guild guild, String roleName, User user){
         Role role = guild.getRolesByName(roleName, true).get(0);
-        guild.removeRoleFromMember(user, role);
+        guild.removeRoleFromMember(user, role).queue(
+            success -> {
+                List<Member> membersWithRole = guild.getMembersWithRoles(role);
+                if (membersWithRole.isEmpty()){
+                    deleteRole(guild, roleName);
+                }
+            },
 
-        List<Member> membersWithRole = guild.getMembersWithRoles(role);
-        if (membersWithRole.isEmpty()){
-            deleteRole(guild, roleName);
-        }
+            error -> {
+                System.err.println("Failed to remove role " + role + " from member " +user.getName());
+            }
+        );
     }
 
     public static void deleteRole(Guild guild, String roleName) {
