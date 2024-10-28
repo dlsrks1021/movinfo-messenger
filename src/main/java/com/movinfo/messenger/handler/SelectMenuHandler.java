@@ -11,48 +11,70 @@ import com.movinfo.messenger.util.MongoUtils;
 
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
+import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
+import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 
 public class SelectMenuHandler extends ListenerAdapter{
-    @Override
-    public void onStringSelectInteraction(StringSelectInteractionEvent event){
-        List<Movie> movies = MongoUtils.getMovieList();
-        movies.forEach(movie -> {
-            if (event.getComponentId().equals(movie.getName())){
-                if (event.getValues().isEmpty()){
-                    for (String type : Screen.SCREEN_TYPE_LIST){
-                        String roleName = movie.getName()+"_"+type;
-                        if (RoleManager.hasRole(JDAUtils.getGuild(), roleName, event.getUser())){
-                            RoleManager.removeRoleFromMember(JDAUtils.getGuild(), roleName, event.getUser());
-                        }
-                    }
-                } else{
-                    List<String> roleNameList = new LinkedList<>();
-                    
-                    event.getValues().forEach(value -> {
-                        roleNameList.add(movie.getName()+"_"+value);
-                    });
 
-                    for (String type : Screen.SCREEN_TYPE_LIST){
-                        String roleName = movie.getName()+"_"+type;
-                        if (roleNameList.contains(roleName)){
-                            if (!RoleManager.hasRole(JDAUtils.getGuild(), roleName, event.getUser())){
-                                if (!RoleManager.isRoleExist(JDAUtils.getGuild(), roleName)){
-                                    RoleManager.createRole(JDAUtils.getGuild(), roleName);
-                                }
-                                RoleManager.addRoleToMember(JDAUtils.getGuild(), roleName, event.getUser());
-                            }
-                        } else {
-                            if (RoleManager.hasRole(JDAUtils.getGuild(), roleName, event.getUser())){
-                                RoleManager.removeRoleFromMember(JDAUtils.getGuild(), roleName, event.getUser());
-                            }
-                        }
+    public static int MAX_NUM_MENUS = 5;
+    public static int MAX_NUM_OPTIONS = 25;
 
+    private void handleMovieSelectMenu(StringSelectInteractionEvent event){
+        String selectedMovieName = event.getValues().get(0);
+
+        List<SelectOption> selectOptions = new LinkedList<>();
+        for (String type : Screen.SCREEN_TYPE_LIST){
+            String roleName = selectedMovieName+"_"+type;
+            SelectOption option = SelectOption.of(type, roleName);
+            if (RoleManager.hasRole(JDAUtils.getGuild(), selectedMovieName+"_"+type, event.getUser())){
+                option.withDefault(true);
+            } else {
+                option.withDefault(false);
+            }
+            selectOptions.add(option);
+        }
+
+        StringSelectMenu menu = StringSelectMenu.create("screen-select-menu-"+selectedMovieName)
+            .setPlaceholder("상영관 종류")
+            .setMaxValues(6)
+            .addOptions(selectOptions)
+            .build();
+            
+        event.reply("알림 설정할 영화와 극장 종류를 선택해주세요.").setEphemeral(true)
+            .addActionRow(menu)
+            .queue();
+    }
+
+    private void handleScreenSelectMenu(StringSelectInteractionEvent event){
+        String selectedMovieName = event.getComponentId().substring("screen-select-menu-".length());
+        List<String> selectedRoleNames = event.getValues();
+
+        for (String type : Screen.SCREEN_TYPE_LIST){
+            String roleName = selectedMovieName+"_"+type;
+            if (selectedRoleNames.contains(roleName)){
+                if (!RoleManager.hasRole(JDAUtils.getGuild(), roleName, event.getUser())){
+                    if (!RoleManager.isRoleExist(JDAUtils.getGuild(), roleName)){
+                        RoleManager.createRole(JDAUtils.getGuild(), roleName);
                     }
+                    RoleManager.addRoleToMember(JDAUtils.getGuild(), roleName, event.getUser());
+                }
+            } else{
+                if (RoleManager.hasRole(JDAUtils.getGuild(), roleName, event.getUser())){
+                    RoleManager.removeRoleFromMember(JDAUtils.getGuild(), roleName, event.getUser());
                 }
             }
-        });
+        }
+        
+        event.deferReply(true).queue();
+    }
 
-        event.deferReply(true)
-        .queue();
+    @Override
+    public void onStringSelectInteraction(StringSelectInteractionEvent event){
+        if (event.getComponentId().contains("movie-select-menu")){
+            handleMovieSelectMenu(event);
+        } else if (event.getComponentId().contains("screen-select-menu")){
+            handleScreenSelectMenu(event);
+        }
     }
 }
