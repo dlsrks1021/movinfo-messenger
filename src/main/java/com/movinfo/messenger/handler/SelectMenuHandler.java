@@ -55,9 +55,10 @@ public class SelectMenuHandler extends ListenerAdapter{
             if (selectedRoleNames.contains(roleName)){
                 if (!RoleManager.hasRole(JDAUtils.getGuild(), roleName, event.getUser())){
                     if (!RoleManager.isRoleExist(JDAUtils.getGuild(), roleName)){
-                        RoleManager.createRole(JDAUtils.getGuild(), roleName);
+                        RoleManager.createRoleAndAddRoleToMember(JDAUtils.getGuild(), roleName, event.getUser());
+                    } else {
+                        RoleManager.addRoleToMember(JDAUtils.getGuild(), roleName, event.getUser());
                     }
-                    RoleManager.addRoleToMember(JDAUtils.getGuild(), roleName, event.getUser());
                 }
             } else{
                 if (RoleManager.hasRole(JDAUtils.getGuild(), roleName, event.getUser())){
