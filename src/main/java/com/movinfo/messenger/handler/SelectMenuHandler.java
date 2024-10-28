@@ -38,6 +38,7 @@ public class SelectMenuHandler extends ListenerAdapter{
         StringSelectMenu menu = StringSelectMenu.create("screen-select-menu-"+selectedMovieName)
             .setPlaceholder("상영관 종류")
             .setMaxValues(6)
+            .setMinValues(0)
             .addOptions(selectOptions)
             .build();
             
