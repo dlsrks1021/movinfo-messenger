@@ -41,7 +41,7 @@ public class SelectMenuHandler extends ListenerAdapter{
             .addOptions(selectOptions)
             .build();
             
-        event.reply("알림 설정할 영화와 극장 종류를 선택해주세요.").setEphemeral(true)
+        event.reply("[" + selectedMovieName + "] 영화에 대해 알림을 설정할 극장 종류를 선택해주세요.").setEphemeral(true)
             .addActionRow(menu)
             .queue();
     }
