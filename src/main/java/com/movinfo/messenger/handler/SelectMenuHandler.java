@@ -67,7 +67,7 @@ public class SelectMenuHandler extends ListenerAdapter{
             }
         }
         
-        event.deferReply(true).queue();
+        event.deferEdit().queue();
     }
 
     @Override
