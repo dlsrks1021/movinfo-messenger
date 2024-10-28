@@ -55,7 +55,7 @@ public class RoleManager {
         }
     }
 
-    public static void createRole(Guild guild, String roleName) {
+    public static void createRoleAndAddRoleToMember(Guild guild, String roleName, User user) {
         while (getNumRoles(guild) >= MAX_NUM_ROLES){
             Movie oldMovie = JDAUtils.deleteOldestMovieFromList();
             for (String type : Screen.SCREEN_TYPE_LIST){
@@ -71,7 +71,12 @@ public class RoleManager {
              .setColor(getRoleColorByRoleName(roleName))
              .setMentionable(true)
              .queue(
-                 role -> System.out.println("Role Created '" + role.getName()),
+                 role -> {
+                    System.out.println("Role Created '" + role.getName());
+                    if (user != null){
+                        addRoleToMember(guild, roleName, user);
+                    }
+                },
                  error -> System.err.println("Role Creation Failed : " + error.getMessage())
              );
     }    
