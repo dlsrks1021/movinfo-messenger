@@ -1,10 +1,14 @@
 package com.movinfo.messenger.util;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.TimeZone;
+
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.bson.types.Binary;
@@ -41,10 +45,16 @@ public class MongoUtils {
 
     private static Screen parseScreenFromDocument(Document screenDocument, String dateString){
         List<String> screenTypes = screenDocument.getList(dateString, String.class);
-        Instant instant = Instant.parse(dateString);
-        Date date = Date.from(instant);
-
-        return new Screen(date, screenTypes);
+        try{
+            SimpleDateFormat formatter = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
+            formatter.setTimeZone(TimeZone.getTimeZone("KST"));
+            Date date = formatter.parse(dateString);
+    
+            return new Screen(date, screenTypes);
+        } catch (ParseException e){
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public static Movie parseMovieFromDocument(Document movieDocument){
@@ -58,9 +68,11 @@ public class MongoUtils {
         Movie movie = new Movie(id, name, dateOpen, poster);
         if (screenDocument != null){
             Set<String> screenDate = screenDocument.keySet();
-            screenDate.forEach(dateString -> 
-                movie.addScreen(parseScreenFromDocument(screenDocument, dateString))
-            );
+            screenDate.forEach(dateString -> {
+                Screen parsedScreen = parseScreenFromDocument(screenDocument, dateString);
+                if (parsedScreen != null)
+                    movie.addScreen(parsedScreen);
+            });
         }
 
         return movie;
