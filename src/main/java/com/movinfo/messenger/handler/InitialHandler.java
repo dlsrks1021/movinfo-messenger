@@ -2,6 +2,7 @@ package com.movinfo.messenger.handler;
 
 import com.movinfo.messenger.command.MessageSender;
 import com.movinfo.messenger.util.JDAUtils;
+import com.movinfo.messenger.util.MongoUtils;
 
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
@@ -15,6 +16,8 @@ public class InitialHandler extends ListenerAdapter{
     }
 
     private void sendNotificationButtonIfNotSent(ReadyEvent event){
+        MongoUtils.watchMovieInfo();
+        
         MessageChannel channel = event.getJDA().getTextChannelById(JDAUtils.getNotiSetChannelId());
         
         if (channel != null) {

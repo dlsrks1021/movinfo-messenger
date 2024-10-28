@@ -15,8 +15,5 @@ public class App
         // init
         MongoUtils.init();
         JDAUtils.init();
-
-        // execute
-        MongoUtils.watchMovieInfo();
     }
 }
