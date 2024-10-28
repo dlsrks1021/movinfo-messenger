@@ -26,13 +26,17 @@ public class SelectMenuHandler extends ListenerAdapter{
         List<SelectOption> selectOptions = new LinkedList<>();
         for (String type : Screen.SCREEN_TYPE_LIST){
             String roleName = selectedMovieName+"_"+type;
-            SelectOption option;
-            if (RoleManager.hasRole(JDAUtils.getGuild(), selectedMovieName+"_"+type, event.getUser())){
-                option = SelectOption.of(type, roleName).withDefault(true);
-            } else {
-                option = SelectOption.of(type, roleName).withDefault(false);
-            }
-            selectOptions.add(option);
+
+            RoleManager.hasRole(JDAUtils.getGuild(), roleName, event.getUser()).thenAccept(hasRole -> {
+                SelectOption option;
+                if (hasRole){
+                    option = SelectOption.of(type, roleName).withDefault(true);
+                } else {
+                    option = SelectOption.of(type, roleName).withDefault(false);
+                }
+
+                selectOptions.add(option);
+            });
         }
 
         StringSelectMenu menu = StringSelectMenu.create("screen-select-menu-"+selectedMovieName)
@@ -54,17 +58,21 @@ public class SelectMenuHandler extends ListenerAdapter{
         for (String type : Screen.SCREEN_TYPE_LIST){
             String roleName = selectedMovieName+"_"+type;
             if (selectedRoleNames.contains(roleName)){
-                if (!RoleManager.hasRole(JDAUtils.getGuild(), roleName, event.getUser())){
-                    if (!RoleManager.isRoleExist(JDAUtils.getGuild(), roleName)){
-                        RoleManager.createRoleAndAddRoleToMember(JDAUtils.getGuild(), roleName, event.getUser());
-                    } else {
-                        RoleManager.addRoleToMember(JDAUtils.getGuild(), roleName, event.getUser());
+                RoleManager.hasRole(JDAUtils.getGuild(), roleName, event.getUser()).thenAccept(hasRole -> {
+                    if (!hasRole){
+                        if (!RoleManager.isRoleExist(JDAUtils.getGuild(), roleName)){
+                            RoleManager.createRoleAndAddRoleToMember(JDAUtils.getGuild(), roleName, event.getUser());
+                        } else {
+                            RoleManager.addRoleToMember(JDAUtils.getGuild(), roleName, event.getUser());
+                        }
                     }
-                }
+                });
             } else{
-                if (RoleManager.hasRole(JDAUtils.getGuild(), roleName, event.getUser())){
-                    RoleManager.removeRoleFromMember(JDAUtils.getGuild(), roleName, event.getUser());
-                }
+                RoleManager.hasRole(JDAUtils.getGuild(), roleName, event.getUser()).thenAccept(hasRole -> {
+                    if (hasRole){
+                        RoleManager.removeRoleFromMember(JDAUtils.getGuild(), roleName, event.getUser());
+                    }
+                });
             }
         }
         
