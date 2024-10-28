@@ -26,11 +26,11 @@ public class SelectMenuHandler extends ListenerAdapter{
         List<SelectOption> selectOptions = new LinkedList<>();
         for (String type : Screen.SCREEN_TYPE_LIST){
             String roleName = selectedMovieName+"_"+type;
-            SelectOption option = SelectOption.of(type, roleName);
+            SelectOption option;
             if (RoleManager.hasRole(JDAUtils.getGuild(), selectedMovieName+"_"+type, event.getUser())){
-                option.withDefault(true);
+                option = SelectOption.of(type, roleName).withDefault(true);
             } else {
-                option.withDefault(false);
+                option = SelectOption.of(type, roleName).withDefault(false);
             }
             selectOptions.add(option);
         }
