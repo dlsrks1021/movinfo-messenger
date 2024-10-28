@@ -1,6 +1,7 @@
 package com.movinfo.messenger.command;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import com.movinfo.messenger.model.Movie;
 import com.movinfo.messenger.model.Screen;
@@ -86,15 +87,24 @@ public class RoleManager {
         guild.addRoleToMember(user, role).queue();
     }
 
-    public static boolean hasRole(Guild guild, String roleName, User user){
-        Member member = guild.getMember(user);
+    public static CompletableFuture<Boolean> hasRole(Guild guild, String roleName, User user){
+        CompletableFuture<Boolean> future = new CompletableFuture<>();
 
-        if (member != null){
-            Role role = guild.getRolesByName(roleName, true).get(0);
-            return member.getRoles().contains(role);
-        }
+        guild.retrieveMember(user).queue(
+            member -> {
+                if (member != null){
+                    Role role = guild.getRolesByName(roleName, true).get(0);
+                    future.complete(member.getRoles().contains(role));
+                } else {
+                    future.complete(false);
+                }
+            },
+            error -> {
+                future.complete(false);
+            }
+        );
 
-        return false;
+        return future;
     }
 
     public static void removeRoleFromMember(Guild guild, String roleName, User user){
