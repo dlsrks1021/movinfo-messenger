@@ -32,7 +32,8 @@ public class MessageSender {
         stringBuilder.append("\n");
         roleNames.forEach(roleName -> {
             Role role = RoleManager.getRoleByName(JDAUtils.getGuild(), roleName);
-            stringBuilder.append(role.getAsMention());
+            if (role != null)
+                stringBuilder.append(role.getAsMention());
         });
         
         channel.sendMessage(stringBuilder.toString()).queue();

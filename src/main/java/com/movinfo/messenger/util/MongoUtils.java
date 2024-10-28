@@ -32,7 +32,7 @@ public class MongoUtils {
         mongoDatabase = mongoClient.getDatabase("movinfo");
         movieList = new LinkedList<>();
 
-        saveMoviesToMapFromDB();
+        saveMoviesToListFromDB();
 
         MongoCollection<Document> movieCollection = mongoDatabase.getCollection("movies");
         MongoCollection<Document> resumeTokenCollection = mongoDatabase.getCollection("resume_token_storage");
@@ -67,6 +67,11 @@ public class MongoUtils {
     }
 
     public static void addMovieToList(Movie movie){
+        for (Movie movieInList : movieList){
+            if (movieInList.getId().equals(movie.getId())){
+                return;
+            }
+        }
         movieList.add(movie);
     }
 
@@ -117,7 +122,7 @@ public class MongoUtils {
         }
     }
 
-    private static void saveMoviesToMapFromDB(){
+    private static void saveMoviesToListFromDB(){
         MongoCollection<Document> movieCollection =  mongoDatabase.getCollection("movies");
         FindIterable<Document> movies = movieCollection.find();
 

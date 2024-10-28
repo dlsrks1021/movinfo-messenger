@@ -2,6 +2,11 @@ package com.movinfo.messenger.command;
 
 import java.util.List;
 
+import com.movinfo.messenger.model.Movie;
+import com.movinfo.messenger.model.Screen;
+import com.movinfo.messenger.util.JDAUtils;
+import com.movinfo.messenger.util.MongoUtils;
+
 import java.awt.Color;
 
 import net.dv8tion.jda.api.entities.Guild;
@@ -15,6 +20,25 @@ public class RoleManager {
 
     private RoleManager(){}
 
+    private static Color getRoleColorByRoleName(String roleName){
+        Color color = Color.GRAY;
+        if (roleName.contains("SCREENX")){
+            color = Color.RED;
+        } else if (roleName.contains("TEMPUR CINEMA")) {
+            color = Color.DARK_GRAY;
+        } else if (roleName.contains("GOLD CLASS")) {
+            color = Color.YELLOW;
+        } else if (roleName.contains("IMAX")) {
+            color = Color.BLUE;
+        } else if (roleName.contains("4DX")) {
+            color = Color.ORANGE;
+        } else {
+            color = Color.GRAY;
+        }
+
+        return color;
+    }
+
     public static int getNumRoles(Guild guild){
         return guild.getRoles().size();
     }
@@ -24,13 +48,27 @@ public class RoleManager {
     }
 
     public static Role getRoleByName(Guild guild, String roleName){
-        return guild.getRolesByName(roleName, true).get(0);
+        if (!guild.getRolesByName(roleName, true).isEmpty()){
+            return guild.getRolesByName(roleName, true).get(0);
+        } else {
+            return null;
+        }
     }
 
-    public static void createRole(Guild guild, String roleName, Color color) {
+    public static void createRole(Guild guild, String roleName) {
+        while (getNumRoles(guild) >= MAX_NUM_ROLES){
+            Movie oldMovie = JDAUtils.deleteOldestMovieFromList();
+            for (String type : Screen.SCREEN_TYPE_LIST){
+                String oldRoleName = oldMovie.getName()+"_"+type;
+                if (isRoleExist(guild, oldRoleName)){
+                    deleteRole(guild, oldRoleName);
+                }
+            }
+        }
+
         guild.createRole()
              .setName(roleName)
-             .setColor(color)
+             .setColor(getRoleColorByRoleName(roleName))
              .setMentionable(true)
              .queue(
                  role -> System.out.println("Role Created '" + role.getName()),
@@ -57,6 +95,11 @@ public class RoleManager {
     public static void removeRoleFromMember(Guild guild, String roleName, User user){
         Role role = guild.getRolesByName(roleName, true).get(0);
         guild.removeRoleFromMember(user, role);
+
+        List<Member> membersWithRole = guild.getMembersWithRoles(role);
+        if (membersWithRole.isEmpty()){
+            deleteRole(guild, roleName);
+        }
     }
 
     public static void deleteRole(Guild guild, String roleName) {

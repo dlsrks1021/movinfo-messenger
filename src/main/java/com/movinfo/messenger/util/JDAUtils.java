@@ -95,28 +95,7 @@ public class JDAUtils {
         MessageSender.sendMessageWithRoleMentions(channel, dateOpenString, roleNames);
     }
 
-    private static void createRoleForMovie(Movie movie){
-        for (String type : Screen.SCREEN_TYPE_LIST){
-            String roleName = movie.getName()+"_"+type;
-            Color color = Color.GRAY;
-            if (roleName.contains("SCREENX")){
-                color = Color.RED;
-            } else if (roleName.contains("TEMPUR CINEMA")) {
-                color = Color.DARK_GRAY;
-            } else if (roleName.contains("GOLD CLASS")) {
-                color = Color.YELLOW;
-            } else if (roleName.contains("IMAX")) {
-                color = Color.BLUE;
-            } else if (roleName.contains("4DX")) {
-                color = Color.ORANGE;
-            } else {
-                color = Color.GRAY;
-            }
-            RoleManager.createRole(getGuild(), roleName, color);
-        }
-    }
-
-    private static Movie deleteOldestMovieFromList(){
+    public static Movie deleteOldestMovieFromList(){
         Movie oldMovie = MongoUtils.getMovieList().get(0);
         for (Movie movie : MongoUtils.getMovieList()){
             if (movie.getDateOpen().before(oldMovie.getDateOpen())){
@@ -133,17 +112,8 @@ public class JDAUtils {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("[" + movie.getName() + "]\n");
         stringBuilder.append("개봉 일자 : " + dateOpen);
-        
-        if (RoleManager.getNumRoles(getGuild()) + 6 > RoleManager.MAX_NUM_ROLES){
-            Movie oldMovie = deleteOldestMovieFromList();
-            for (String type : Screen.SCREEN_TYPE_LIST){
-                String roleName = oldMovie.getName()+"_"+type;
-                RoleManager.deleteRole(getGuild(), roleName);
-            }
-        }
-        createRoleForMovie(movie);
 
         MessageChannel channel = jda.getChannelById(MessageChannel.class, MOVIE_CHANNEL_ID);
-        MessageSender.sendMessageWithImage(channel, stringBuilder.toString(), movie.getPoster(), movie.getName());
+        MessageSender.sendMessageWithImage(channel, stringBuilder.toString(), movie.getPoster(), movie.getName()+".png");
     }
 }
