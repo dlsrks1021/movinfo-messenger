@@ -12,8 +12,6 @@ import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 
-import java.awt.Color;
-
 import com.movinfo.messenger.command.MessageSender;
 import com.movinfo.messenger.command.RoleManager;
 import com.movinfo.messenger.handler.ButtonClickHandler;
@@ -21,7 +19,6 @@ import com.movinfo.messenger.handler.InitialHandler;
 import com.movinfo.messenger.handler.MessageReceiveHandler;
 import com.movinfo.messenger.handler.SelectMenuHandler;
 import com.movinfo.messenger.model.Movie;
-import com.movinfo.messenger.model.Screen;
 
 public class JDAUtils {
     private static final String BOT_TOKEN = System.getenv("BOT_TOKEN");
@@ -91,8 +88,18 @@ public class JDAUtils {
         });
         stringBuilder.append("]");
 
-        MessageChannel channel = jda.getChannelById(MessageChannel.class, SCREEN_CHANNEL_ID);
-        MessageSender.sendMessageWithRoleMentions(channel, dateOpenString, roleNames);
+        boolean anyRoleExist = false;
+        for (String roleName : roleNames){
+            if (RoleManager.isRoleExist(getGuild(), roleName)){
+                anyRoleExist = true;
+                break;
+            }
+        }
+
+        if (anyRoleExist){
+            MessageChannel channel = jda.getChannelById(MessageChannel.class, SCREEN_CHANNEL_ID);
+            MessageSender.sendMessageWithRoleMentions(channel, stringBuilder.toString(), roleNames);
+        }
     }
 
     public static Movie deleteOldestMovieFromList(){
