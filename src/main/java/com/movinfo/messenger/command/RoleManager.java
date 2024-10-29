@@ -93,8 +93,13 @@ public class RoleManager {
         guild.retrieveMember(user).queue(
             member -> {
                 if (member != null){
-                    Role role = guild.getRolesByName(roleName, true).get(0);
-                    future.complete(member.getRoles().contains(role));
+                    if (!guild.getRolesByName(roleName, true).isEmpty()){
+                        Role role = guild.getRolesByName(roleName, true).get(0);
+                        future.complete(member.getRoles().contains(role));
+                    } else {
+                        future.complete(false);
+                    }
+                    
                 } else {
                     future.complete(false);
                 }
