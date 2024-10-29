@@ -2,7 +2,6 @@ package com.movinfo.messenger.util;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -109,7 +108,7 @@ public class MongoUtils {
     public static void checkAndSendMessageForUpdatedScreenFromMovie(Movie updateMovie){
         Movie existMovie = null;
         for (Movie movie : movieList){
-            if (movie.getDateOpen().equals(updateMovie.getDateOpen())){
+            if (movie.getName().equals(updateMovie.getName())){
                 existMovie = movie;
                 break;
             }
@@ -131,6 +130,8 @@ public class MongoUtils {
                     JDAUtils.sendScreenInfoToScreenChannel(updateMovie.getName(), date, screen.getScreentypes());
                 }
             }
+        } else{
+            System.err.println(updateMovie.getName() + " is not exist in list!");
         }
     }
 
