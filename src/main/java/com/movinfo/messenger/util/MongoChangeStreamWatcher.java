@@ -4,6 +4,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import com.mongodb.client.model.changestream.FullDocument;
 import com.mongodb.client.model.changestream.OperationType;
 import com.movinfo.messenger.model.Movie;
 
@@ -27,9 +28,14 @@ public class MongoChangeStreamWatcher {
 
         MongoCursor<ChangeStreamDocument<Document>> cursor;
         if (lastResumeToken != null) {
-            cursor = collection.watch().resumeAfter(lastResumeToken).iterator();
+            cursor = collection.watch()
+                .resumeAfter(lastResumeToken)
+                .fullDocument(FullDocument.UPDATE_LOOKUP)
+                .iterator();
         } else {
-            cursor = collection.watch().iterator();
+            cursor = collection.watch()
+                .fullDocument(FullDocument.UPDATE_LOOKUP)
+                .iterator();
         }
 
         while (cursor.hasNext()) {
@@ -45,6 +51,7 @@ public class MongoChangeStreamWatcher {
                 }
                 else if (operationType.equals(OperationType.UPDATE)){
                     Movie movie =  MongoUtils.parseMovieFromDocument(updatedDocument);
+                    System.out.println(movie.getName() + "updated");
                     MongoUtils.checkAndSendMessageForUpdatedScreenFromMovie(movie);
                 }
                 else if (operationType.equals(OperationType.DELETE)){
