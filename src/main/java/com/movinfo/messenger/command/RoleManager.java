@@ -6,8 +6,6 @@ import java.util.concurrent.CompletableFuture;
 import com.movinfo.messenger.model.Movie;
 import com.movinfo.messenger.model.Screen;
 import com.movinfo.messenger.util.JDAUtils;
-import com.movinfo.messenger.util.MongoUtils;
-
 import java.awt.Color;
 
 import net.dv8tion.jda.api.entities.Guild;
@@ -87,29 +85,31 @@ public class RoleManager {
         guild.addRoleToMember(user, role).queue();
     }
 
-    public static CompletableFuture<Boolean> hasRole(Guild guild, String roleName, User user){
-        CompletableFuture<Boolean> future = new CompletableFuture<>();
+    public static CompletableFuture<Member> getMember(Guild guild, User user){
+        CompletableFuture<Member> future = new CompletableFuture<>();
 
         guild.retrieveMember(user).queue(
             member -> {
                 if (member != null){
-                    if (!guild.getRolesByName(roleName, true).isEmpty()){
-                        Role role = guild.getRolesByName(roleName, true).get(0);
-                        future.complete(member.getRoles().contains(role));
-                    } else {
-                        future.complete(false);
-                    }
-                    
+                    if (!future.isDone())
+                        future.complete(member);
                 } else {
-                    future.complete(false);
+                    if (!future.isDone())
+                        future.complete(null);
                 }
-            },
-            error -> {
-                future.complete(false);
             }
         );
 
         return future;
+    }
+
+    public static boolean hasRole(Guild guild, String roleName, Member member){
+        if (!guild.getRolesByName(roleName, true).isEmpty()){
+            Role role = guild.getRolesByName(roleName, true).get(0);
+            return member.getRoles().contains(role);
+        }
+
+        return false;
     }
 
     public static void removeRoleFromMember(Guild guild, String roleName, User user){
